@@ -14,8 +14,8 @@ const config = {
     reentry: 3,
     numberAllowedRebuys: 1,
     numberAllowedReentries: 1,
-    blindLevelRebuysAllowed: 3, // until which level rebuys are allowed
-    blindLevelReentriesAllowed: 3, // until which level reentries are allowed
+    blindLevelRebuysAllowed: 2, // until which level rebuys are allowed
+    blindLevelReentriesAllowed: 2, // until which level reentries are allowed
     finalTableSize: 6,
 };
 
@@ -297,6 +297,7 @@ function shuffle(array) {
 
 function addPlayer(name) {
     state.players.push({ id: playerIdCounter++, name: name, table: -1, status: 'nicht zugeordnet', rebuy: 0, reentry: 0, expenses: config.buyIn, noPartOfPot: false, place: -1 });
+    state.players.filter(p => p.place != -1).forEach(p => p.place+=1);
 }
 
 function removePlayer(id) {
@@ -416,8 +417,7 @@ resetGameBtn.addEventListener('click', () => {
 
 startPauseBtn.addEventListener('click', () => {
     if (config.blindLevels[state.currentLevel].color_up) {
-        alert('Der Timer kann während eines Color-Ups nicht gestartet werden.');
-        return;
+        nextLevel(true);
     }
     if (state.timer.isRunning) {
         pauseTimer();
@@ -504,6 +504,18 @@ function resetTimer() {
 
 function nextLevel(run) {
     if (state.currentLevel < config.blindLevels.length - 1) {
+
+        if (state.currentLevel + 1 < config.blindLevels.length 
+            && state.currentLevel === config.blindLevelRebuysAllowed
+            && config.blindLevels[state.currentLevel].color_up) {
+                alert('Rebuys sind jetzt nicht mehr erlaubt.');
+        }
+        if (state.currentLevel + 1 < config.blindLevels.length 
+            && state.currentLevel === config.blindLevelReentriesAllowed
+            && config.blindLevels[state.currentLevel].color_up) {
+                alert('Reentries sind jetzt nicht mehr erlaubt.');
+        }
+
         state.currentLevel += 1;
         state.timer.remainingSeconds = config.blindLevels[state.currentLevel].time;
         if (!run) {
